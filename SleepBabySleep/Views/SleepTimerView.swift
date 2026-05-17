@@ -180,10 +180,14 @@ struct SleepTimerView: View {
         case .preset(let minutes):
             return "\(minutes) minute timer"
         case .dateTime(let date):
-            let formatter = DateFormatter()
-            formatter.dateStyle = .none
-            formatter.timeStyle = .short
-            return "Scheduled for \(formatter.string(from: date))"
+            return "Scheduled for \(Self.timeFormatter.string(from: date))"
         }
     }
+    
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .none
+        f.timeStyle = .short
+        return f
+    }()
 }

@@ -116,16 +116,14 @@ struct TabbedMenuView: View {
     
     private func updateLoginItem(enabled: Bool) {
         UserDefaults.standard.set(enabled, forKey: "launchAtLogin")
-        if #available(macOS 13.0, *) {
-            do {
-                if enabled {
-                    try SMAppService.mainApp.register()
-                } else {
-                    try SMAppService.mainApp.unregister()
-                }
-            } catch {
-                print("Login item error: \(error.localizedDescription)")
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
             }
+        } catch {
+            print("Login item error: \(error.localizedDescription)")
         }
     }
 }

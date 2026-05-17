@@ -1,35 +1,15 @@
 import Foundation
 import Combine
+import os
 
-/// ViewModel for the stopwatch (chronometer)
+private let log = Logger(subsystem: Constants.bundleIdentifier, category: "Chronometer")
+
 final class ChronometerViewModel: ObservableObject {
     
     @Published var elapsedSeconds: TimeInterval = 0
     @Published var isRunning: Bool = false
     @Published var laps: [TimeInterval] = []
-    
-    var formattedTime: String {
-        let totalMs = Int(elapsedSeconds * 100)
-        let minutes = (totalMs / 6000) % 60
-        let seconds = (totalMs / 100) % 60
-        let centiseconds = totalMs % 100
-        
-        if minutes > 0 {
-            return String(format: "%d:%02d.%02d", minutes, seconds, centiseconds)
-        } else {
-            return String(format: "%02d.%02d", seconds, centiseconds)
-        }
-    }
-    
-    var formattedLaps: [String] {
-        laps.map { time in
-            let totalMs = Int(time * 100)
-            let minutes = (totalMs / 6000) % 60
-            let seconds = (totalMs / 100) % 60
-            let centiseconds = totalMs % 100
-            return String(format: "%d:%02d.%02d", minutes, seconds, centiseconds)
-        }
-    }
+    @Published private(set) var formattedTime: String = "00.00"
     
     private var timerCancellable: AnyCancellable?
     private var startDate: Date?
@@ -41,7 +21,7 @@ final class ChronometerViewModel: ObservableObject {
         isRunning = true
         startDate = Date()
         
-        timerCancellable = Timer.publish(every: 0.01, on: .main, in: .common)
+        timerCancellable = Timer.publish(every: 0.02, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.tick()
@@ -67,6 +47,7 @@ final class ChronometerViewModel: ObservableObject {
         accumulatedTime = 0
         startDate = nil
         laps = []
+        formattedTime = "00.00"
     }
     
     func lap() {
@@ -78,7 +59,26 @@ final class ChronometerViewModel: ObservableObject {
     
     private func tick() {
         if let start = startDate {
-            elapsedSeconds = accumulatedTime + Date().timeIntervalSince(start)
+            let newElapsed = accumulatedTime + Date().timeIntervalSince(start)
+            elapsedSeconds = newElapsed
+            formattedTime = formatTime(newElapsed)
         }
+    }
+    
+    private func formatTime(_ seconds: TimeInterval) -> String {
+        let totalMs = Int(seconds * 100)
+        let minutes = (totalMs / 6000) % 60
+        let secs = (totalMs / 100) % 60
+        let centiseconds = totalMs % 100
+        
+        if minutes > 0 {
+            return String(format: "%d:%02d.%02d", minutes, secs, centiseconds)
+        } else {
+            return String(format: "%02d.%02d", secs, centiseconds)
+        }
+    }
+    
+    var formattedLaps: [String] {
+        laps.map { formatTime($0) }
     }
 }

@@ -1,5 +1,8 @@
 import Foundation
 import UserNotifications
+import os
+
+private let log = Logger(subsystem: Constants.bundleIdentifier, category: "Notification")
 
 /// Service responsible for sending local notifications
 /// before the Mac goes to sleep (30s warning).
@@ -22,7 +25,7 @@ final class NotificationService {
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options: [.alert, .sound]) { granted, error in
             if let error = error {
-                print("Notification permission error: \(error.localizedDescription)")
+                log.error("Permission denied: \(error.localizedDescription)")
             }
         }
     }
@@ -45,7 +48,7 @@ final class NotificationService {
         
         center.add(request) { error in
             if let error = error {
-                print("Failed to send notification: \(error.localizedDescription)")
+                log.error("Failed to send: \(error.localizedDescription)")
             }
         }
     }
