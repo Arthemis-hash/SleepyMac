@@ -65,9 +65,7 @@ struct CountdownTimerView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
-            .controlSize(.large)
+            .buttonStyle(FluoButtonStyle(color: .red))
         }
     }
     
@@ -115,7 +113,7 @@ struct CountdownTimerView: View {
                 }) {
                     Label("Start", systemImage: "play.fill")
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(FluoButtonStyle(color: .orangeFluo))
                 .disabled(viewModel.customMinutes <= 0)
             }
         }
@@ -129,7 +127,7 @@ struct CountdownTimerView: View {
         } else if viewModel.secondsRemaining <= 30 {
             return .orange
         } else {
-            return .accentColor
+            return .orangeFluo
         }
     }
 }

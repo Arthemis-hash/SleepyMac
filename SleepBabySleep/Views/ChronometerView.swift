@@ -11,7 +11,7 @@ struct ChronometerView: View {
             Text(viewModel.formattedTime)
                 .font(.system(size: 42, weight: .light, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(viewModel.isRunning ? Color.accentColor : .primary)
+                .foregroundStyle(viewModel.isRunning ? Color.orangeFluo : .primary)
                 .frame(height: 60)
             
             // Controls
@@ -25,8 +25,7 @@ struct ChronometerView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
+                    .buttonStyle(FluoButtonStyle(color: .red))
                     
                     Button(action: {
                         viewModel.lap()
@@ -36,8 +35,7 @@ struct ChronometerView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.orange)
+                    .buttonStyle(FluoButtonStyle(color: .orangeFluo))
                 } else {
                     Button(action: {
                         if viewModel.elapsedSeconds > 0 {
@@ -54,8 +52,7 @@ struct ChronometerView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(viewModel.elapsedSeconds > 0 ? .secondary : .green)
+                    .buttonStyle(FluoButtonStyle(color: viewModel.elapsedSeconds > 0 ? .secondary : .greenFluo))
                 }
             }
             

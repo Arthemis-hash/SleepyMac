@@ -3,7 +3,6 @@ import ServiceManagement
 
 struct TabbedMenuView: View {
     @State private var selectedTab: AppTab = .sleep
-    @StateObject private var sleepViewModel = SleepTimerViewModel()
     
     enum AppTab: String, CaseIterable {
         case chrono = "Chrono"
@@ -55,7 +54,7 @@ struct TabbedMenuView: View {
             case .countdown:
                 CountdownTimerView()
             case .sleep:
-                SleepTimerView(viewModel: sleepViewModel)
+                SleepTimerView()
             }
         }
     }
@@ -80,10 +79,6 @@ struct TabbedMenuView: View {
                 .controlSize(.mini)
             }
             .padding(.horizontal)
-            
-            Text("Cmd+Shift+Esc to cancel")
-                .font(.system(.caption2, design: .rounded))
-                .foregroundStyle(.tertiary)
             
             Divider()
             
@@ -135,17 +130,55 @@ private struct TabButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 2) {
-                Image(systemName: tab.icon)
-                    .font(.system(size: 14))
+            VStack(spacing: 4) {
+                ZStack {
+                    // 3D shadow layer
+                    Image(systemName: tab.icon)
+                        .font(.system(size: 15.68))
+                        .foregroundStyle(tabColor.opacity(0.4))
+                        .offset(y: 2)
+                    
+                    // Main icon with gradient
+                    Image(systemName: tab.icon)
+                        .font(.system(size: 15.68, weight: .semibold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [tabColor, tabColor.opacity(0.7)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .shadow(color: tabColor.opacity(isSelected ? 0.6 : 0.3), radius: isSelected ? 6 : 3, x: 0, y: isSelected ? 2 : 1)
+                }
+                
                 Text(tab.rawValue)
                     .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .foregroundStyle(isSelected ? tabColor : .secondary)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
-            .foregroundStyle(isSelected ? Color.accentColor : .secondary)
-            .background(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+            .background(
+                Group {
+                    if isSelected {
+                        LinearGradient(
+                            colors: [tabColor.opacity(0.15), tabColor.opacity(0.05)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    } else {
+                        Color.clear
+                    }
+                }
+            )
         }
         .buttonStyle(.plain)
+    }
+    
+    private var tabColor: Color {
+        switch tab {
+        case .chrono: return .blue
+        case .countdown: return .orange
+        case .sleep: return .purple
+        }
     }
 }

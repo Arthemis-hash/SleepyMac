@@ -27,22 +27,6 @@ final class SoundService {
         }
     }
     
-    /// Play the sleep warning sound (softer)
-    func playWarning() {
-        guard let url = soundURL(for: "Tink") else {
-            NSSound.beep()
-            return
-        }
-        
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.volume = 0.5
-            audioPlayer?.play()
-        } catch {
-            NSSound.beep()
-        }
-    }
-    
     /// Get URL for a system sound
     private func soundURL(for name: String) -> URL? {
         // System sounds are in /System/Library/Sounds/

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Sleep timer view - schedule Mac to sleep
 struct SleepTimerView: View {
-    @ObservedObject var viewModel: SleepTimerViewModel
+    @StateObject private var viewModel = SleepTimerViewModel()
     
     var body: some View {
         VStack(spacing: 16) {
@@ -13,6 +13,9 @@ struct SleepTimerView: View {
             }
         }
         .padding()
+        .onReceive(NotificationCenter.default.publisher(for: .cancelAllTimers)) { _ in
+            viewModel.cancel()
+        }
     }
     
     // MARK: - Active Timer
@@ -77,9 +80,7 @@ struct SleepTimerView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
-            .controlSize(.large)
+            .buttonStyle(FluoButtonStyle(color: .red))
         }
         .animation(.easeInOut, value: viewModel.warningSent)
     }
@@ -106,17 +107,17 @@ struct SleepTimerView: View {
                             .font(.system(.body, design: .rounded))
                             .fontWeight(.medium)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 11.5)
                             .background(
                                 minutes == viewModel.lastPresetMinutes
-                                    ? Color.accentColor.opacity(0.15)
+                                    ? Color.orangeFluo.opacity(0.15)
                                     : Color.primary.opacity(0.05)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .strokeBorder(
                                         minutes == viewModel.lastPresetMinutes
-                                            ? Color.accentColor.opacity(0.4)
+                                            ? Color.orangeFluo.opacity(0.4)
                                             : Color.clear,
                                         lineWidth: 1.5
                                     )
@@ -156,8 +157,7 @@ struct SleepTimerView: View {
                     }) {
                         Label("Start", systemImage: "play.fill")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+                    .buttonStyle(FluoButtonStyle(color: .orangeFluo, isLarge: true))
                 }
             }
         }
@@ -171,7 +171,7 @@ struct SleepTimerView: View {
         } else if viewModel.secondsRemaining <= 60 {
             return .orange
         } else {
-            return .accentColor
+            return .orangeFluo
         }
     }
     
@@ -190,4 +190,8 @@ struct SleepTimerView: View {
         f.timeStyle = .short
         return f
     }()
+}
+
+extension Notification.Name {
+    static let cancelAllTimers = Notification.Name("cancelAllTimers")
 }

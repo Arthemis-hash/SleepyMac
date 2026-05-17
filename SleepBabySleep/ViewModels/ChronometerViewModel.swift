@@ -1,9 +1,7 @@
-import Foundation
+import SwiftUI
 import Combine
-import os
 
-private let log = Logger(subsystem: Constants.bundleIdentifier, category: "Chronometer")
-
+@MainActor
 final class ChronometerViewModel: ObservableObject {
     
     @Published var elapsedSeconds: TimeInterval = 0
