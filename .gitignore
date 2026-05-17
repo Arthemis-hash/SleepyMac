@@ -23,7 +23,6 @@ Package.resolved
 
 # Build artifacts
 *.app
-*.dmg
 *.ipa
 *.dSYM.zip
 *.dSYM
