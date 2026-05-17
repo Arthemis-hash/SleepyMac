@@ -1,0 +1,66 @@
+name: Build and Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: macos-14
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XCODE_PATH" ]; then
+            sudo xcode-select -s "$XCODE_PATH"
+          fi
+          xcodebuild -version
+          swift --version
+
+      - name: Build
+        run: |
+          chmod +x Scripts/build.sh
+          ./Scripts/build.sh
+
+      - name: Run Tests
+        run: swift test
+
+      - name: Create DMG
+        run: |
+          chmod +x Scripts/create-dmg.sh
+          ./Scripts/create-dmg.sh
+
+      - name: Compute SHA256
+        id: sha256
+        run: |
+          SHA=$(shasum -a 256 SleepBabySleep.dmg | awk '{print $1}')
+          echo "sha256=$SHA" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: SleepBabySleep.dmg
+          generate_release_notes: true
+          body: |
+            ## Installation
+
+            1. Download `SleepBabySleep.dmg`
+            2. Open the DMG
+            3. Drag **Sleep Baby Sleep** to your Applications folder
+            4. On first launch: right-click the app > Open (Gatekeeper bypass)
+
+            **SHA256:** `${{ steps.sha256.outputs.sha256 }}`
+
+            ## Homebrew
+
+            ```bash
+            brew tap YOUR_USERNAME/tap
+            brew install --cask sleep-baby-sleep
+            ```
