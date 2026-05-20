@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// Sleep timer view - schedule Mac to sleep
 struct SleepTimerView: View {
-    @StateObject private var viewModel = SleepTimerViewModel()
+    @ObservedObject var viewModel: SleepTimerViewModel
     
     var body: some View {
         VStack(spacing: 16) {
@@ -18,8 +17,6 @@ struct SleepTimerView: View {
         }
     }
     
-    // MARK: - Active Timer
-    
     private var activeTimer: some View {
         VStack(spacing: 16) {
             if let mode = viewModel.currentMode {
@@ -28,7 +25,6 @@ struct SleepTimerView: View {
                     .foregroundStyle(.secondary)
             }
             
-            // Circular progress
             ZStack {
                 Circle()
                     .stroke(Color.primary.opacity(0.08), lineWidth: 8)
@@ -69,7 +65,6 @@ struct SleepTimerView: View {
                     .transition(.opacity)
             }
             
-            // Cancel button
             Button(action: {
                 viewModel.cancel()
                 if UserDefaults.standard.bool(forKey: "soundEnabled") {
@@ -85,8 +80,6 @@ struct SleepTimerView: View {
         .animation(.easeInOut, value: viewModel.warningSent)
     }
     
-    // MARK: - Timer Selection
-    
     private var timerSelection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Sleep Timer", systemImage: "moon.zzz.fill")
@@ -94,7 +87,6 @@ struct SleepTimerView: View {
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)
             
-            // Quick presets
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                 ForEach(Constants.timerPresets, id: \.self) { minutes in
                     Button(action: {
@@ -130,7 +122,6 @@ struct SleepTimerView: View {
             
             Divider()
             
-            // Date/time picker
             VStack(alignment: .leading, spacing: 8) {
                 Text("Schedule")
                     .font(.system(.caption, design: .rounded))
@@ -163,8 +154,6 @@ struct SleepTimerView: View {
         }
     }
     
-    // MARK: - Helpers
-    
     private var timerColor: Color {
         if viewModel.secondsRemaining <= 30 {
             return .red
@@ -190,8 +179,4 @@ struct SleepTimerView: View {
         f.timeStyle = .short
         return f
     }()
-}
-
-extension Notification.Name {
-    static let cancelAllTimers = Notification.Name("cancelAllTimers")
 }

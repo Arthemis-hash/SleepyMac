@@ -1,28 +1,22 @@
 import SwiftUI
 
-/// Countdown timer view - count down from a chosen duration
 struct CountdownTimerView: View {
-    @StateObject private var viewModel = CountdownTimerViewModel()
+    @ObservedObject var viewModel: CountdownTimerViewModel
     @AppStorage("soundEnabled") private var soundEnabled = false
     
     var body: some View {
         VStack(spacing: 16) {
             if viewModel.isRunning {
-                // Active countdown
                 activeCountdown
             } else {
-                // Duration selection
                 durationSelection
             }
         }
         .padding()
     }
     
-    // MARK: - Active Countdown
-    
     private var activeCountdown: some View {
         VStack(spacing: 16) {
-            // Circular progress
             ZStack {
                 Circle()
                     .stroke(Color.primary.opacity(0.08), lineWidth: 8)
@@ -48,7 +42,7 @@ struct CountdownTimerView: View {
                         .monospacedDigit()
                         .shadow(color: timerColor.opacity(0.2), radius: 2, x: 0, y: 0)
                     
-                    Text("remaining")
+                    Text(viewModel.isPaused ? "paused" : "remaining")
                         .font(.system(.caption2, design: .rounded))
                         .foregroundStyle(.tertiary)
                         .textCase(.uppercase)
@@ -56,20 +50,41 @@ struct CountdownTimerView: View {
             }
             .frame(width: 150, height: 150)
             
-            // Cancel button
-            Button(action: {
-                viewModel.cancel()
-                if soundEnabled { SoundService.shared.play(soundName: "Pop") }
-            }) {
-                Label("Cancel", systemImage: "xmark.circle.fill")
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
+            HStack(spacing: 12) {
+                if viewModel.isPaused {
+                    Button(action: {
+                        viewModel.resume()
+                        if soundEnabled { SoundService.shared.play(soundName: "Pop") }
+                    }) {
+                        Label("Resume", systemImage: "play.fill")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                    }
+                    .buttonStyle(FluoButtonStyle(color: .greenFluo))
+                } else {
+                    Button(action: {
+                        viewModel.pause()
+                        if soundEnabled { SoundService.shared.play(soundName: "Pop") }
+                    }) {
+                        Label("Pause", systemImage: "pause.fill")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                    }
+                    .buttonStyle(FluoButtonStyle(color: .orangeFluo))
+                }
+                
+                Button(action: {
+                    viewModel.cancel()
+                    if soundEnabled { SoundService.shared.play(soundName: "Pop") }
+                }) {
+                    Label("Cancel", systemImage: "xmark.circle.fill")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                }
+                .buttonStyle(FluoButtonStyle(color: .red))
             }
-            .buttonStyle(FluoButtonStyle(color: .red))
         }
     }
-    
-    // MARK: - Duration Selection
     
     private var durationSelection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -78,7 +93,6 @@ struct CountdownTimerView: View {
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)
             
-            // Quick presets
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                 ForEach([1, 3, 5, 10, 15, 30], id: \.self) { minutes in
                     Button(action: {
@@ -97,7 +111,6 @@ struct CountdownTimerView: View {
                 }
             }
             
-            // Custom duration
             HStack {
                 TextField("Min", value: $viewModel.customMinutes, format: .number)
                     .textFieldStyle(.roundedBorder)
@@ -118,8 +131,6 @@ struct CountdownTimerView: View {
             }
         }
     }
-    
-    // MARK: - Helpers
     
     private var timerColor: Color {
         if viewModel.secondsRemaining <= 10 {

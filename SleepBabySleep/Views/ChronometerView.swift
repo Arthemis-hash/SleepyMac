@@ -1,62 +1,64 @@
 import SwiftUI
 
-/// Stopwatch view with start/stop/reset/lap
 struct ChronometerView: View {
-    @StateObject private var viewModel = ChronometerViewModel()
+    @ObservedObject var viewModel: ChronometerViewModel
     @AppStorage("soundEnabled") private var soundEnabled = false
     
     var body: some View {
         VStack(spacing: 20) {
-            // Time display
             Text(viewModel.formattedTime)
                 .font(.system(size: 42, weight: .light, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(viewModel.isRunning ? Color.orangeFluo : .primary)
                 .frame(height: 60)
             
-            // Controls
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 if viewModel.isRunning {
-                    Button(action: {
-                        viewModel.stop()
-                        if soundEnabled { SoundService.shared.play(soundName: "Pop") }
-                    }) {
-                        Label("Stop", systemImage: "stop.fill")
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
+                    if viewModel.isPaused {
+                        Button(action: {
+                            viewModel.resume()
+                            if soundEnabled { SoundService.shared.play(soundName: "Pop") }
+                        }) {
+                            Label("Resume", systemImage: "play.fill")
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
+                        .buttonStyle(FluoButtonStyle(color: .greenFluo))
+                    } else {
+                        Button(action: {
+                            viewModel.pause()
+                            if soundEnabled { SoundService.shared.play(soundName: "Pop") }
+                        }) {
+                            Label("Pause", systemImage: "pause.fill")
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
+                        .buttonStyle(FluoButtonStyle(color: .orangeFluo))
                     }
-                    .buttonStyle(FluoButtonStyle(color: .red))
                     
                     Button(action: {
-                        viewModel.lap()
-                        if soundEnabled { SoundService.shared.play(soundName: "Tink") }
+                        viewModel.reset()
+                        if soundEnabled { SoundService.shared.play(soundName: "Pop") }
                     }) {
-                        Label("Lap", systemImage: "flag.fill")
+                        Label("Reset", systemImage: "arrow.counterclockwise")
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                     }
-                    .buttonStyle(FluoButtonStyle(color: .orangeFluo))
+                    .buttonStyle(FluoButtonStyle(color: .secondary))
+                    
                 } else {
                     Button(action: {
-                        if viewModel.elapsedSeconds > 0 {
-                            viewModel.reset()
-                        } else {
-                            viewModel.start()
-                        }
+                        viewModel.start()
                         if soundEnabled { SoundService.shared.play(soundName: "Pop") }
                     }) {
-                        Label(
-                            viewModel.elapsedSeconds > 0 ? "Reset" : "Start",
-                            systemImage: viewModel.elapsedSeconds > 0 ? "arrow.counterclockwise" : "play.fill"
-                        )
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                        Label("Start", systemImage: "play.fill")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
                     }
-                    .buttonStyle(FluoButtonStyle(color: viewModel.elapsedSeconds > 0 ? .secondary : .greenFluo))
+                    .buttonStyle(FluoButtonStyle(color: .greenFluo))
                 }
             }
             
-            // Laps
             if !viewModel.laps.isEmpty {
                 Divider()
                 

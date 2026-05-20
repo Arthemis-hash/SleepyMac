@@ -2,10 +2,10 @@ import Foundation
 import Combine
 import UserNotifications
 
-/// ViewModel for countdown timer
 final class CountdownTimerViewModel: ObservableObject {
     
     @Published var isRunning: Bool = false
+    @Published var isPaused: Bool = false
     @Published var secondsRemaining: TimeInterval = 0
     @Published var customMinutes: Int = 0
     
@@ -24,6 +24,7 @@ final class CountdownTimerViewModel: ObservableObject {
     private var timerCancellable: AnyCancellable?
     private var targetDate: Date = Date()
     private var totalDuration: TimeInterval = 0
+    private var pausedRemaining: TimeInterval = 0
     
     func start(minutes: Int) {
         cancel()
@@ -33,6 +34,32 @@ final class CountdownTimerViewModel: ObservableObject {
         secondsRemaining = duration
         targetDate = Date().addingTimeInterval(duration)
         isRunning = true
+        isPaused = false
+        pausedRemaining = 0
+        
+        timerCancellable = Timer.publish(every: 1, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.tick()
+            }
+    }
+    
+    func pause() {
+        guard isRunning, !isPaused else { return }
+        
+        isPaused = true
+        timerCancellable?.cancel()
+        timerCancellable = nil
+        pausedRemaining = secondsRemaining
+    }
+    
+    func resume() {
+        guard isRunning, isPaused else { return }
+        
+        isPaused = false
+        totalDuration = pausedRemaining
+        secondsRemaining = pausedRemaining
+        targetDate = Date().addingTimeInterval(pausedRemaining)
         
         timerCancellable = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
@@ -45,8 +72,10 @@ final class CountdownTimerViewModel: ObservableObject {
         timerCancellable?.cancel()
         timerCancellable = nil
         isRunning = false
+        isPaused = false
         secondsRemaining = 0
         totalDuration = 0
+        pausedRemaining = 0
     }
     
     private func tick() {
@@ -60,7 +89,6 @@ final class CountdownTimerViewModel: ObservableObject {
     private func triggerDone() {
         cancel()
         
-        // Send notification
         let content = UNMutableNotificationContent()
         content.title = "Countdown Finished"
         content.body = "Your timer has completed!"
@@ -74,7 +102,6 @@ final class CountdownTimerViewModel: ObservableObject {
         
         UNUserNotificationCenter.current().add(request)
         
-        // Play sound
         SoundService.shared.play(soundName: "Glass")
     }
 }

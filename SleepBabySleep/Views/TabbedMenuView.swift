@@ -1,8 +1,15 @@
 import SwiftUI
 import ServiceManagement
+import os
+
+private let log = Logger(subsystem: Constants.bundleIdentifier, category: "TabbedMenu")
 
 struct TabbedMenuView: View {
     @State private var selectedTab: AppTab = .sleep
+    
+    @StateObject private var chronoVM = ChronometerViewModel()
+    @StateObject private var countdownVM = CountdownTimerViewModel()
+    @StateObject private var sleepVM = SleepTimerViewModel()
     
     enum AppTab: String, CaseIterable {
         case chrono = "Chrono"
@@ -50,11 +57,11 @@ struct TabbedMenuView: View {
         Group {
             switch selectedTab {
             case .chrono:
-                ChronometerView()
+                ChronometerView(viewModel: chronoVM)
             case .countdown:
-                CountdownTimerView()
+                CountdownTimerView(viewModel: countdownVM)
             case .sleep:
-                SleepTimerView()
+                SleepTimerView(viewModel: sleepVM)
             }
         }
     }
@@ -118,7 +125,7 @@ struct TabbedMenuView: View {
                 try SMAppService.mainApp.unregister()
             }
         } catch {
-            print("Login item error: \(error.localizedDescription)")
+            log.error("Login item error: \(error.localizedDescription)")
         }
     }
 }
@@ -132,13 +139,11 @@ private struct TabButton: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 ZStack {
-                    // 3D shadow layer
                     Image(systemName: tab.icon)
                         .font(.system(size: 15.68))
                         .foregroundStyle(tabColor.opacity(0.4))
                         .offset(y: 2)
                     
-                    // Main icon with gradient
                     Image(systemName: tab.icon)
                         .font(.system(size: 15.68, weight: .semibold))
                         .foregroundStyle(

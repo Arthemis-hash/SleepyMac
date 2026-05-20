@@ -1,7 +1,6 @@
 import SwiftUI
 import AVFoundation
 
-/// Service for playing system sounds
 final class SoundService {
     
     static let shared = SoundService()
@@ -10,16 +9,17 @@ final class SoundService {
     
     private init() {}
     
-    /// Play a notification sound
-    /// - Parameter soundName: Name of the sound ("glass", "bell", "chime", "pop")
     func play(soundName: String = "glass") {
         guard let url = soundURL(for: soundName) else {
-            // Fallback to system sound
             NSSound.beep()
             return
         }
         
         do {
+            // Memory fix: stop and release old player before creating new one
+            audioPlayer?.stop()
+            audioPlayer = nil
+            
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.play()
         } catch {
@@ -27,9 +27,7 @@ final class SoundService {
         }
     }
     
-    /// Get URL for a system sound
     private func soundURL(for name: String) -> URL? {
-        // System sounds are in /System/Library/Sounds/
         let systemPath = "/System/Library/Sounds/\(name).aiff"
         if FileManager.default.fileExists(atPath: systemPath) {
             return URL(fileURLWithPath: systemPath)
@@ -37,8 +35,8 @@ final class SoundService {
         return nil
     }
     
-    /// Stop any currently playing sound
     func stop() {
         audioPlayer?.stop()
+        audioPlayer = nil
     }
 }

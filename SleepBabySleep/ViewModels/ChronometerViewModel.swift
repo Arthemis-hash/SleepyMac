@@ -6,6 +6,7 @@ final class ChronometerViewModel: ObservableObject {
     
     @Published var elapsedSeconds: TimeInterval = 0
     @Published var isRunning: Bool = false
+    @Published var isPaused: Bool = false
     @Published var laps: [TimeInterval] = []
     @Published private(set) var formattedTime: String = "00.00"
     
@@ -13,10 +14,13 @@ final class ChronometerViewModel: ObservableObject {
     private var startDate: Date?
     private var accumulatedTime: TimeInterval = 0
     
+    private static let maxLaps = 50
+    
     func start() {
         guard !isRunning else { return }
         
         isRunning = true
+        isPaused = false
         startDate = Date()
         
         timerCancellable = Timer.publish(every: 0.02, on: .main, in: .common)
@@ -26,10 +30,10 @@ final class ChronometerViewModel: ObservableObject {
             }
     }
     
-    func stop() {
-        guard isRunning else { return }
+    func pause() {
+        guard isRunning, !isPaused else { return }
         
-        isRunning = false
+        isPaused = true
         timerCancellable?.cancel()
         timerCancellable = nil
         
@@ -37,10 +41,28 @@ final class ChronometerViewModel: ObservableObject {
             accumulatedTime += Date().timeIntervalSince(start)
             startDate = nil
         }
+        elapsedSeconds = accumulatedTime
+        formattedTime = formatTime(accumulatedTime)
+    }
+    
+    func resume() {
+        guard isRunning, isPaused else { return }
+        
+        isPaused = false
+        startDate = Date()
+        
+        timerCancellable = Timer.publish(every: 0.02, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.tick()
+            }
     }
     
     func reset() {
-        stop()
+        timerCancellable?.cancel()
+        timerCancellable = nil
+        isRunning = false
+        isPaused = false
         elapsedSeconds = 0
         accumulatedTime = 0
         startDate = nil
@@ -53,6 +75,11 @@ final class ChronometerViewModel: ObservableObject {
         
         let currentTime = accumulatedTime + (startDate.map { Date().timeIntervalSince($0) } ?? 0)
         laps.append(currentTime)
+        
+        // Memory optimization: cap laps to prevent unbounded growth
+        if laps.count > Self.maxLaps {
+            laps.removeFirst(laps.count - Self.maxLaps)
+        }
     }
     
     private func tick() {
