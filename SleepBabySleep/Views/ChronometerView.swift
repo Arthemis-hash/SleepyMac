@@ -37,10 +37,31 @@ struct ChronometerView: View {
                     }
                     
                     Button(action: {
+                        viewModel.stop()
+                        if soundEnabled { SoundService.shared.play(soundName: "Pop") }
+                    }) {
+                        Label("Stop", systemImage: "stop.fill")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(FluoButtonStyle(color: .secondary))
+                    
+                } else if viewModel.isStopped {
+                    Button(action: {
+                        viewModel.resumeFromStop()
+                        if soundEnabled { SoundService.shared.play(soundName: "Pop") }
+                    }) {
+                        Label("Reprendre", systemImage: "play.fill")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(FluoButtonStyle(color: .greenFluo))
+                    
+                    Button(action: {
                         viewModel.reset()
                         if soundEnabled { SoundService.shared.play(soundName: "Pop") }
                     }) {
-                        Label("Reset", systemImage: "arrow.counterclockwise")
+                        Label("Effacer", systemImage: "xmark.circle")
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                     }

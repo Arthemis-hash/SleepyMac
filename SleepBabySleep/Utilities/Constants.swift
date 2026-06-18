@@ -1,5 +1,9 @@
 import Foundation
 
+extension Notification.Name {
+    static let cancelAllTimers = Notification.Name("cancelAllTimers")
+}
+
 enum Constants {
     static let timerPresets: [Int] = [10, 15, 30, 45]
     static let warningBeforeSleepSeconds: TimeInterval = 30

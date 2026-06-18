@@ -92,7 +92,7 @@ final class CountdownTimerViewModel: ObservableObject {
         let content = UNMutableNotificationContent()
         content.title = "Countdown Finished"
         content.body = "Your timer has completed!"
-        content.sound = .default
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("Glass"))
         
         let request = UNNotificationRequest(
             identifier: "countdown-done-\(UUID().uuidString)",
@@ -102,6 +102,7 @@ final class CountdownTimerViewModel: ObservableObject {
         
         UNUserNotificationCenter.current().add(request)
         
+        // Double notification: play sound via AVAudioPlayer for louder feedback
         SoundService.shared.play(soundName: "Glass")
     }
 }
