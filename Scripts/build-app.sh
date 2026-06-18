@@ -29,10 +29,8 @@ chmod +x "${MACOS}/${APP_NAME}"
 
 cp "${PROJECT_DIR}/${APP_NAME}/Resources/Info.plist" "${CONTENTS}/Info.plist"
 
-ASSETS_SRC="${PROJECT_DIR}/${APP_NAME}/Resources/Assets.xcassets"
-if [ -d "$ASSETS_SRC" ]; then
-    cp -R "$ASSETS_SRC" "${RESOURCES}/Assets.xcassets"
-fi
+# Copy app icon (ICNS)
+cp "${PROJECT_DIR}/${APP_NAME}/Resources/SleepMac.icns" "${RESOURCES}/SleepMac.icns"
 
 # Apply entitlements with ad-hoc codesign for hardened runtime
 if [ -f "$ENTITLEMENTS" ]; then

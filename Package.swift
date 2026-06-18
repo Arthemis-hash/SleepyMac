@@ -13,6 +13,7 @@ let package = Package(
             exclude: [
                 "Resources/Assets.xcassets",
                 "Resources/Info.plist",
+                "Resources/SleepMac.icns",
                 "SleepBabySleep.entitlements"
             ],
             linkerSettings: [
